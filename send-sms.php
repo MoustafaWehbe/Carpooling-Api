@@ -5,12 +5,9 @@ header("Access-Control-Allow-Origin: *");
 header('Access-Control-Allow-Credentials: true');
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
-$x = array('status' => 'ok', 'message' => 'verification sent');
-print(json_encode($x));
-die();
 
-// $NEXMO_TO= $_REQUEST['mobile'] ;
-$NEXMO_TO = '+96179151873';
+$NEXMO_TO= $_REQUEST['mobile'] ;
+// $NEXMO_TO = '+96179151873';
 //var_dump($NEXMO_TO);
 $NEXMO_FROM='CarpoolingApp';
 $MESSAGE='Welcome to Carpooling App';
@@ -36,4 +33,7 @@ $verification = $client->verify()->start([
 //echo "Sent message to " . $message['to'] . ". Balance is now " . 
 //$message['remaining-balance'] . PHP_EOL;
 
+$x = array('status' => 'ok', 'message' => 'verification sent');
+print(json_encode($x));
+die();
 ?>

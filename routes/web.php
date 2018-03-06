@@ -10,7 +10,12 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/', function () {
-    return view('send-sms');
+Route::get('/login', function () {
+    return view('test');
 });
+Route::get('/', function () {
+    return view('welcome');
+});
+
+//Route::post('/login', 'UserController@authenticate');
+

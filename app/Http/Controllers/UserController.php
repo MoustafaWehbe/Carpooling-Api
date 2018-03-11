@@ -94,6 +94,7 @@ class UserController extends ApiController
         $rules = array (
             'name' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users',
+            'phone' => 'required|unique:users',
             'password' => 'required|min:6|confirmed',
             'password_confirmation' => 'required|min:3'
         );
@@ -105,6 +106,7 @@ class UserController extends ApiController
             $user = User::create([
                 'name' => $request['name'],
                 'email' => $request['email'],
+                'phone' => $request['phone'],
                 'password' => \Hash::make($request['password']),
             ]);
             return $this->_login($request['email'], $request['password']);

@@ -1,6 +1,7 @@
-<?php namespace App\Repository\Transformers;
+<?php 
+namespace App\Repository\Transformers;
 abstract class Transformer {
-    /*
+    /**
      * Transforms a collection of lessons
      * @param $lessons
      * @return array

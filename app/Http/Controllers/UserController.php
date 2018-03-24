@@ -106,12 +106,12 @@ class UserController extends ApiController
             return $this->respondValidationError('Fields Validation Failed.', $validator->errors());
         }
         else{
-            // $user = User::create([
-            //     'name' => $request['name'],
-            //     'email' => $request['email'],
-            //     'phone' => $request['phone'],
-            //     'password' => \Hash::make($request['password']),
-            // ]);
+            $user = User::create([
+                'name' => $request['name'],
+                'email' => $request['email'],
+                'phone' => $request['phone'],
+                'password' => \Hash::make($request['password']),
+            ]);
 
             $response = Httpful\Request::get("https://api.nexmo.com/verify/json?api_key=9ea9ec62&api_secret=hqkupJC7HAcQQ0sw&number=" . $request['phone'] . "&brand=MyApp")
                 ->send();
@@ -125,7 +125,8 @@ class UserController extends ApiController
                         'status' => 'success',
                         'status_code' => $this->getStatusCode(),
                         'message' => 'verification pending!',
-                        'data' => $response->body->request_id
+                        'request_id' => $response->body->request_id,
+                        
                     ]);        
         }
     }

@@ -6,6 +6,7 @@ class UserTransformer extends Transformer{
         return [
             'fullname' => $user->name,
             'email' => $user->email,
+            'phone' => $user->phone,
             'api_token' => $user->api_token,
         ];
     }

@@ -9,6 +9,9 @@ use App\Repository\Transformers\UserTransformer;
 use \Illuminate\Http\Response as Res;
 use Validator;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use App\users_verification;
+use Nexmo;
+use Httpful;
 
 class UserController extends ApiController
 {
@@ -103,13 +106,27 @@ class UserController extends ApiController
             return $this->respondValidationError('Fields Validation Failed.', $validator->errors());
         }
         else{
-            $user = User::create([
-                'name' => $request['name'],
-                'email' => $request['email'],
-                'phone' => $request['phone'],
-                'password' => \Hash::make($request['password']),
-            ]);
-            return $this->_login($request['email'], $request['password']);
+            // $user = User::create([
+            //     'name' => $request['name'],
+            //     'email' => $request['email'],
+            //     'phone' => $request['phone'],
+            //     'password' => \Hash::make($request['password']),
+            // ]);
+
+            $response = Httpful\Request::get("https://api.nexmo.com/verify/json?api_key=9ea9ec62&api_secret=hqkupJC7HAcQQ0sw&number=" . $request['phone'] . "&brand=MyApp")
+                ->send();
+
+            
+            $verify = users_verification::create([
+                'userid' => $user->id,
+                'requestid' => $response->body->request_id
+                ]);
+            return $this->respond([
+                        'status' => 'success',
+                        'status_code' => $this->getStatusCode(),
+                        'message' => 'verification pending!',
+                        'data' => $response->body->request_id
+                    ]);        
         }
     }
 

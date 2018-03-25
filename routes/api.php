@@ -16,6 +16,7 @@ Route::group(['middleware' => 'cors', 'prefix' => '/v1'], function () {
     Route::post('/login', 'UserController@authenticate');
     Route::post('/register', 'UserController@register');
     Route::post('/logout/{api_token}', 'UserController@logout');
+    Route::post('/verify/phone', 'UserController@verifyNumber');
 });
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();

@@ -14,10 +14,10 @@ class CreateUsersVerificationTable extends Migration
     public function up()
     {
         Schema::create('users_verification', function (Blueprint $table) {
-            $table->increments('id');
             $table->unsignedInteger('userid');
             $table->string('requestid');
             $table->timestamps();
+            $table->primary('userid');
             $table->foreign('userid')->references('id')->on('users');
 
         });

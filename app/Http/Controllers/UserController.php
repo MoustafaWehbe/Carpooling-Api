@@ -121,12 +121,17 @@ class UserController extends ApiController
                 'userid' => $user->id,
                 'requestid' => $response->body->request_id
                 ]);
+            $credentials = ['email' => $request['email'], 'password' => $request['password']];
+            $token = JWTAuth::attempt($credentials);
+            $user = JWTAuth::toUser($token);
+            $user->api_token = $token;
+            $user->save();
             return $this->respond([
                         'status' => 'success',
                         'status_code' => $this->getStatusCode(),
                         'message' => 'verification pending!',
                         'request_id' => $response->body->request_id,
-                        
+                        'api_token' => $token
                     ]);        
         }
     }
@@ -155,4 +160,32 @@ class UserController extends ApiController
             return $this->respondInternalError("An error occurred while performing an action!");
         }
     }
+
+
+    public function verifyNumber(Request $request){
+        try {
+            $user = JWTAuth::toUser($request['api_token']);
+            $req = users_verification::where('userid', $user->id)->first();
+            
+            $response = \Httpful\Request::get("https://api.nexmo.com/verify/check/json?api_key=9ea9ec62&api_secret=hqkupJC7HAcQQ0sw&code=" . $request['code'] . "&request_id=" . $req->requestid)
+                ->send();
+                if($response->body->status == 0){
+                    users_verification::where('userid', $user->id)->delete();
+                    $user->verified = 1;
+                    $user->save();
+                    return $this->respond([
+                        'status' => 'success',
+                        'status_code' => $this->getStatusCode(),
+                        'message' => 'verification successful!'
+                    ]);
+                }
+                else{
+                    return $this->respondWithError($response->body->error_text);
+                }
+            
+        } catch (JWTException $e) {
+            return $this->respondInternalError("An error occurred while performing an action!");
+        }
+    }
+    
 }

@@ -14,7 +14,7 @@ $MESSAGE='Welcome to Carpooling App';
 
 $client = $client = new Nexmo\Client(new Nexmo\Client\Credentials\Basic('9ea9ec62', 'hqkupJC7HAcQQ0sw'));
 
-$response = \Httpful\Request::get("https://api.nexmo.com/verify/check/json?api_key=9ea9ec62&api_secret=hqkupJC7HAcQQ0sw&code=7093&request_id=766b2dc49e624450ac85ac1cd167b9cb")
+$response = \Httpful\Request::get("https://api.nexmo.com/verify/check/json?api_key=9ea9ec62&api_secret=hqkupJC7HAcQQ0sw&code=3621&request_id=8c3fc77c268d4dd4a0b668305f45a4c8")
 	->send();
 var_dump($response->body);
 die();

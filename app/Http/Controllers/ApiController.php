@@ -7,6 +7,10 @@ use \Illuminate\Http\Response as Res;
  * Class ApiController
  * @package App\Modules\Api\Lesson\Controllers
  */
+
+define('NEXMO_KEY', '9ea9ec62');
+define('NEXMO_SECRET', 'hqkupJC7HAcQQ0sw');
+
 class ApiController extends Controller{
     /**
      * Create a new authentication controller instance.

@@ -13,6 +13,9 @@ use App\users_verification;
 use Nexmo;
 use Httpful;
 
+
+
+
 class UserController extends ApiController
 {
     /**
@@ -95,31 +98,35 @@ class UserController extends ApiController
     public function register(Request $request)
     {
         $rules = array (
-            'name' => 'required|max:255',
+            'first_name' => 'required|max:125',
+            'last_name' => 'required|max:125',
             'email' => 'required|email|max:255|unique:users',
             'phone' => 'required|unique:users',
             'password' => 'required|min:6|confirmed',
-            'password_confirmation' => 'required|min:3'
+            'password_confirmation' => 'required|min:6'
         );
         $validator = Validator::make($request->all(), $rules);
         if ($validator-> fails()){
             return $this->respondValidationError('Fields Validation Failed.', $validator->errors());
         }
         else{
-            $user = User::create([
-                'name' => $request['name'],
-                'email' => $request['email'],
-                'phone' => $request['phone'],
-                'password' => \Hash::make($request['password']),
-            ]);
 
             try {
-                $response = Httpful\Request::get("https://api.nexmo.com/verify/json?api_key=9ea9ec62&api_secret=hqkupJC7HAcQQ0sw&number=" . $request['phone'] . "&brand=MyApp")
+                $response = Httpful\Request::get("https://api.nexmo.com/verify/json?api_key=" . NEXMO_KEY . "&api_secret=" . NEXMO_SECRET . "&number=" . $request['phone'] . "&brand=MyApp")
                     ->send();
             } catch (Exception $e) {
                 return $this->respondInternalError("An error occured while sending verification code, please try again later.");
             }
-
+            if(!property_exists($response->body, 'request_id')){
+                return $this->respondWithError("Enter a valid phone number.(ex: 96103123456)");
+            }
+            $user = User::create([
+                'first_name' => $request['first_name'],
+                'last_name' => $request['last_name'],
+                'email' => $request['email'],
+                'phone' => $request['phone'],
+                'password' => \Hash::make($request['password']),
+            ]);
             
             $verify = users_verification::updateOrCreate(
                 ['userid' => $user->id],

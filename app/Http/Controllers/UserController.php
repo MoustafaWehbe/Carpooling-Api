@@ -111,15 +111,15 @@ class UserController extends ApiController
         }
         else{
 
-            try {
-                $response = Httpful\Request::get("https://api.nexmo.com/verify/json?api_key=" . NEXMO_KEY . "&api_secret=" . NEXMO_SECRET . "&number=" . $request['phone'] . "&brand=MyApp")
-                    ->send();
-            } catch (Exception $e) {
-                return $this->respondInternalError("An error occured while sending verification code, please try again later.");
-            }
-            if(!property_exists($response->body, 'request_id')){
-                return $this->respondWithError("Enter a valid phone number.(ex: 96103123456)");
-            }
+            // try {
+            //     $response = Httpful\Request::get("https://api.nexmo.com/verify/json?api_key=" . NEXMO_KEY . "&api_secret=" . NEXMO_SECRET . "&number=" . $request['phone'] . "&brand=MyApp")
+            //         ->send();
+            // } catch (Exception $e) {
+            //     return $this->respondInternalError("An error occured while sending verification code, please try again later.");
+            // }
+            // if(!property_exists($response->body, 'request_id')){
+            //     return $this->respondWithError("Enter a valid phone number.(ex: 96103123456)");
+            // }
             $user = User::create([
                 'first_name' => $request['first_name'],
                 'last_name' => $request['last_name'],
@@ -130,7 +130,7 @@ class UserController extends ApiController
             
             $verify = users_verification::updateOrCreate(
                 ['userid' => $user->id],
-                ['requestid' => $response->body->request_id
+                ['requestid' => '8339247f172144879d8613f67bafdf67'//$response->body->request_id
                 ]);
             $credentials = ['email' => $request['email'], 'password' => $request['password']];
             $token = JWTAuth::attempt($credentials);
@@ -177,7 +177,7 @@ class UserController extends ApiController
             $user = JWTAuth::toUser($request['api_token']);
             $req = users_verification::where('userid', $user->id)->first();
             
-            $response = \Httpful\Request::get("https://api.nexmo.com/verify/check/json?api_key=9ea9ec62&api_secret=hqkupJC7HAcQQ0sw&code=" . $request['code'] . "&request_id=" . $req->requestid)
+            $response = \Httpful\Request::get("https://api.nexmo.com/verify/check/json?api_key=" . NEXMO_KEY . "&api_secret=" . NEXMO_SECRET . "&code=" . $request['code'] . "&request_id=" . $req->requestid)
                 ->send();
                 if($response->body->status == 0){
                     $user->verified = 1;

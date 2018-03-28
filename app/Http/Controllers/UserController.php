@@ -66,7 +66,7 @@ class UserController extends ApiController
                 }
             }
             else{
-                return $this->respondWithError("Invalid Email or Password");
+                return $this->respondWithError("User does not exist");
             }
         }
     }
@@ -112,7 +112,7 @@ class UserController extends ApiController
         else{
 
             try {
-                $response = Httpful\Request::get("https://api.nexmo.com/verify/json?api_key=" . NEXMO_KEY . "&api_secret=" . NEXMO_SECRET . "&number=" . $request['phone'] . "&brand=MyApp")
+                $response = Httpful\Request::get("https://api.nexmo.com/verify/json?api_key=" . NEXMO_KEY . "&api_secret=" . NEXMO_SECRET . "&number=" . $request['phone'] . "&brand=Carpooling")
                     ->send();
             } catch (Exception $e) {
                 return $this->respondInternalError("An error occured while sending verification code, please try again later.");

@@ -77,7 +77,7 @@ class ApiController extends Controller{
         return $this->respond([
             'status' => 'error',
             'status_code' => Res::HTTP_NOT_FOUND,
-            'message' => $message,
+            'error' => $message,
         ]);
     }
 
@@ -85,14 +85,14 @@ class ApiController extends Controller{
         return $this->respond([
             'status' => 'error',
             'status_code' => Res::HTTP_INTERNAL_SERVER_ERROR,
-            'message' => $message,
+            'error' => $message,
         ]);
     }
     public function respondValidationError($message, $errors){
         return $this->respond([
             'status' => 'error',
             'status_code' => Res::HTTP_UNPROCESSABLE_ENTITY,
-            'message' => $message,
+            'error' => $message,
             'data' => $errors
         ]);
     }
@@ -103,7 +103,7 @@ class ApiController extends Controller{
         return $this->respond([
             'status' => 'error',
             'status_code' => Res::HTTP_UNAUTHORIZED,
-            'message' => $message,
+            'error' => $message,
         ]);
     }
 }

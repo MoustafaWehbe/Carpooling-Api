@@ -85,7 +85,7 @@ class UserController extends ApiController
             'status' => 'success',
             'status_code' => $this->getStatusCode(),
             'message' => 'Login successful!',
-            'data' => $this->userTransformer->transform($user)
+            'user' => $this->userTransformer->transform($user)
         ]);
     }
 

@@ -183,6 +183,7 @@ class UserController extends ApiController
                     $verifs = User::where('phone', $user->phone)->get();
                     foreach ($verifs as $verif) {
                         $verif->verified = 0;
+                        $verif->save();
                     }
                     $user->verified = 1;
                     $user->save();

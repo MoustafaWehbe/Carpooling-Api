@@ -101,7 +101,7 @@ class UserController extends ApiController
             'first_name' => 'required|max:125',
             'last_name' => 'required|max:125',
             'email' => 'required|email|max:255|unique:users',
-            'phone' => 'required|unique:users',
+            'phone' => 'required',
             'password' => 'required|min:6|confirmed',
             'password_confirmation' => 'required|min:6'
         );
@@ -180,6 +180,10 @@ class UserController extends ApiController
             $response = \Httpful\Request::get("https://api.nexmo.com/verify/check/json?api_key=" . NEXMO_KEY . "&api_secret=" . NEXMO_SECRET . "&code=" . $request['code'] . "&request_id=" . $req->requestid)
                 ->send();
                 if($response->body->status == 0){
+                    $verifs = User::where('phone', $user->phone)->get();
+                    foreach ($verifs as $verif) {
+                        $verif->verified = 0;
+                    }
                     $user->verified = 1;
                     $user->save();
                     return $this->respond([

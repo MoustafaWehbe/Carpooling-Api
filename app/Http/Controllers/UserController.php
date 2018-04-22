@@ -9,7 +9,9 @@ use App\Repository\Transformers\UserTransformer;
 use \Illuminate\Http\Response as Res;
 use Validator;
 use Tymon\JWTAuth\Exceptions\JWTException;
-use App\users_verification;
+use App\User_verification;
+use App\User_profile;
+use App\Vehicles;
 use Nexmo;
 use Httpful;
 
@@ -102,8 +104,9 @@ class UserController extends ApiController
             'last_name' => 'required|max:125',
             'email' => 'required|email|max:255|unique:users',
             'phone' => 'required',
+            'gender' => 'required',
             'password' => 'required|min:6|confirmed',
-            'password_confirmation' => 'required|min:6'
+            'password_confirmation' => 'required|min:6', 
         );
         $validator = Validator::make($request->all(), $rules);
         if ($validator-> fails()){
@@ -127,8 +130,13 @@ class UserController extends ApiController
                 'phone' => $request['phone'],
                 'password' => \Hash::make($request['password']),
             ]);
+            User_profile::create([
+                'user_id' => $user->id,
+                'points' => 100,
+                'gender' => $request['gender'],
+            ]);
             
-            $verify = users_verification::updateOrCreate(
+            $verify = User_verification::updateOrCreate(
                 ['userid' => $user->id],
                 ['requestid' => $response->body->request_id
                 ]);
@@ -171,13 +179,16 @@ class UserController extends ApiController
         }
     }
 
-
+    /**
+     * @param  api_token, userid
+     * @return Json String response
+     */
     public function verifyNumber(Request $request){
         try {
             $user = JWTAuth::toUser($request['api_token']);
-            $req = users_verification::where('userid', $user->id)->first();
+            $req = User_verification::where('userid', $user->id)->first();
             
-            $response = \Httpful\Request::get("https://api.nexmo.com/verify/check/json?api_key=" . NEXMO_KEY . "&api_secret=" . NEXMO_SECRET . "&code=" . $request['code'] . "&request_id=" . $req->requestid)
+            $response = Httpful\Request::get("https://api.nexmo.com/verify/check/json?api_key=" . NEXMO_KEY . "&api_secret=" . NEXMO_SECRET . "&code=" . $request['code'] . "&request_id=" . $req->requestid)
                 ->send();
                 if($response->body->status == 0){
                     $verifs = User::where('phone', $user->phone)->get();
@@ -200,6 +211,43 @@ class UserController extends ApiController
         } catch (Exception $e) {
             return $this->respondInternalError("An error occurred while performing an action!");
         }
+    }
+
+    public function getProfile(Request $request){
+        try{
+            try{
+                $user = JWTAuth::toUser($request['api_token']);
+            }
+            catch (JWTException $e){
+                return $this->respondWithError("Session Expired");
+            }
+            $profile = User_profile::where('user_id', $user->id)->first();
+            $vehicle = Vehicles::where('user_id', $user->id)->first();
+            return $this->respond([
+                'status' => 'success',
+                'status_code' => $this->getStatusCode(),
+                'profile' => [
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'verified' => $user->verified,
+                    'image' => $profile ? $profile->image: null,
+                    'points' => $profile ? $profile->points: null,
+                    'gender' => $profile ? $profile->gender: null,
+                    'driving_license' => $profile ? $profile->driving_license: null
+                ],
+                'vehicle' => [
+                    'type' => $vehicle ? $vehicle->type: null,
+                    'model' => $vehicle ? $vehicle->model: null,
+                ]
+            ]);
+        
+        } 
+        catch (Exception $e) {
+            return $this->respondInternalError("An error occurred while performing an action!");
+        }
+
     }
     
 }

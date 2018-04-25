@@ -51,6 +51,15 @@ class ApiController extends Controller{
         ]);
     }
 
+    public function respondOk($message = 'OK'){
+        return $this->respond([
+            'status' => 'success',
+            'status_code' => Res::HTTP_OK,
+            'message' => $message,
+        ]);
+    }
+
+
     /**
      * @param Paginator $paginate
      * @param $data
@@ -88,7 +97,7 @@ class ApiController extends Controller{
             'error' => $message,
         ]);
     }
-    public function respondValidationError($message, $errors){
+    public function respondValidationError($message, $errors = null){
         return $this->respond([
             'status' => 'error',
             'status_code' => Res::HTTP_UNPROCESSABLE_ENTITY,

@@ -168,11 +168,7 @@ class UserController extends ApiController
             $user->save();
             JWTAuth::setToken($api_token)->invalidate();
             $this->setStatusCode(Res::HTTP_OK);
-            return $this->respond([
-                'status' => 'success',
-                'status_code' => $this->getStatusCode(),
-                'message' => 'Logout successful!',
-            ]);
+            return $this->respondOk('Logout successful!');
 
         }catch(JWTException $e){
             return $this->respondInternalError("An error occurred while performing an action!");
@@ -198,11 +194,7 @@ class UserController extends ApiController
                     }
                     $user->verified = 1;
                     $user->save();
-                    return $this->respond([
-                        'status' => 'success',
-                        'status_code' => $this->getStatusCode(),
-                        'message' => 'verification successful!'
-                    ]);
+                    return $this->respondOk('verification successful!');
                 }
                 else{
                     return $this->respondWithError($response->body->error_text);
@@ -248,6 +240,48 @@ class UserController extends ApiController
             return $this->respondInternalError("An error occurred while performing an action!");
         }
 
+    }
+
+    public function updateVehicle(Request $request){
+        try{
+            $user = JWTAuth::toUser($request['api_token']);
+        }
+        catch (JWTException $e){
+            return $this->respondWithError("Session Expired");
+        }
+        $profile = User_profile::where('user_id', $user->id)->first();
+        $rules = array (
+            'driving_license' => !$profile->driving_license ? 'required|string|size:7': 'string|size:7',
+            'type' => 'required|string',
+            'model' => 'required|numeric'
+        );
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator-> fails()){
+            return $this->respondValidationError('Fields Validation Failed.', $validator->errors());
+        }
+        
+        $profile->driving_license = $request['driving_license'] ? $request['driving_license']: $profile->driving_license;
+        $profile->save();
+
+        $vehicle = Vehicles::where('user_id', $user->id)->first();
+        if ($vehicle) {
+            $vehicle->type = $request['type'] ? $request['type']: $vehicle->type;
+            $vehicle->model = $request['model'] ? $request['model']: $vehicle->model;
+            $vehicle->save();
+        }
+        else{
+            $vehicle = Vehicles::create([
+                'user_id' => $user->id,
+                'type' => $request['type'],
+                'model' => $request['model']
+            ]);
+        }
+        return $this->respond([
+                        'status' => 'success',
+                        'status_code' => $this->getStatusCode(),
+                        'message' => "Vehicle's information updated successfully",
+                        'id' => $vehicle->id
+                    ]);
     }
     
 }

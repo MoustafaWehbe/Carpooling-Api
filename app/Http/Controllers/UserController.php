@@ -205,6 +205,11 @@ class UserController extends ApiController
         }
     }
 
+
+    /**
+     * @param  api_token
+     * @return Json
+     */
     public function getProfile(Request $request){
         try{
             try{
@@ -242,6 +247,10 @@ class UserController extends ApiController
 
     }
 
+    /**
+     * @param  Request: api_token, driving_license, type, model
+     * @return Json
+     */
     public function updateVehicle(Request $request){
         try{
             $user = JWTAuth::toUser($request['api_token']);
@@ -259,7 +268,6 @@ class UserController extends ApiController
         if ($validator-> fails()){
             return $this->respondValidationError('Fields Validation Failed.', $validator->errors());
         }
-        
         $profile->driving_license = $request['driving_license'] ? $request['driving_license']: $profile->driving_license;
         $profile->save();
 

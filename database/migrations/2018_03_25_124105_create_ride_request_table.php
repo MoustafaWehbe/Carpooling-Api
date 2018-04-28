@@ -13,7 +13,7 @@ class createRideNeedTable extends Migration
      */
     public function up()
     {
-        Schema::create('ride_need', function (Blueprint $table) {
+        Schema::create('ride_request', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
@@ -33,6 +33,6 @@ class createRideNeedTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ride_need');
+        Schema::dropIfExists('ride_request');
     }
 }

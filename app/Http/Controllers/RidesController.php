@@ -96,11 +96,63 @@ class RidesController extends ApiController
         	'ride_date' => $request['ride_date'],
         ]);
         return $this->respond([
-                        'status' => 'success',
-                        'status_code' => $this->getStatusCode(),
-                        'message' => "New ride request created",
-                        'id' => $ride->id
-                    ]);
-    }				
+            'status' => 'success',
+            'status_code' => $this->getStatusCode(),
+            'message' => "New ride request created",
+            'id' => $ride->id
+        ]);
+    }
 
+    public function getAllRideOffers(Request $request) {
+		try{
+            $user = JWTAuth::toUser($request['api_token']);
+        }
+        catch (JWTException $e){
+            return $this->respondWithError("Session Expired");
+        }
+
+		$rides = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date')->where('is_accomplished',0)->get();
+		return $this->respond([
+            'status' => 'success',
+            'status_code' => $this->getStatusCode(),
+            'rides' => $rides
+        ]);
+	}				
+
+	public function getMyRides(Request $request) {
+		try{
+            $user = JWTAuth::toUser($request['api_token']);
+        }
+        catch (JWTException $e){
+            return $this->respondWithError("Session Expired");
+        }
+
+        $ride_offers_unac = Ride_offer::select('id', 'from', 'to', 'ride_date')->where('is_accomplished',0)->where('user_id', $user->id)->get();
+        $ride_requests_unac = Ride_request::select('id', 'from', 'to', 'ride_date')->where('is_accomplished',0)->where('user_id', $user->id)->get();
+        $ride_offers_ac = Ride_offer::select('id', 'from', 'to', 'ride_date')->where('is_accomplished',1)->where('user_id', $user->id)->get();
+        $ride_requests_ac = Ride_request::select('id', 'from', 'to', 'ride_date')->where('is_accomplished',1)->where('user_id', $user->id)->get();
+        
+        return $this->respond([
+            'status' => 'success',
+            'status_code' => $this->getStatusCode(),
+            'rides' => [
+            	'accomplished' => [
+            		'offers' => $ride_offers_ac,
+            		'requests' => $ride_requests_ac,
+            	],
+            	'unaccomplished' => [
+					'offers' => $ride_offers_unac,
+            		'requests' => $ride_requests_unac,
+            	]
+            ]
+        ]);
+        // return $this->respond([
+        //     'status' => 'success',
+        //     'status_code' => $this->getStatusCode(),
+        //     'rides' => [
+        //     	'offers' => $ride_offers_unac,
+        //     	'requests' => $ride_requests_unac,
+        //     ]
+        // ]);
+	}
 }

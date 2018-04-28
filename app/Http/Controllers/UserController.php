@@ -14,6 +14,8 @@ use App\User_profile;
 use App\Vehicles;
 use Nexmo;
 use Httpful;
+use Illuminate\Support\Facades\Log;
+
 
 
 
@@ -252,6 +254,7 @@ class UserController extends ApiController
      * @return Json
      */
     public function updateVehicle(Request $request){
+        Log::info($request, array("VEHICLEINFO"));
         try{
             $user = JWTAuth::toUser($request['api_token']);
         }

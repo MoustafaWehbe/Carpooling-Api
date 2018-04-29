@@ -47,6 +47,18 @@ class RidesController extends ApiController
         if (!$vehicle || !$vehicle->type) {
         	return $this->respondWithError("you need to enter your vehicle's info before offering a ride");
         }
+        if ($request['path']) {
+        	if (!$request['id']) {
+        		return $this->respondValidationError('ride id is missing');
+        	}
+        	Ride_offer::where('id', $request['id'])->update(['path' => $request['path']]);
+			return $this->respond([
+                'status' => 'success',
+                'status_code' => $this->getStatusCode(),
+                'message' => "path added to ride",
+                'id' => $request['id']
+            ]);        
+		}
         $rules = array (
             'from' => 'required|string',
             'to' => 'required|string',

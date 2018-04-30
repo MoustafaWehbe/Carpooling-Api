@@ -66,7 +66,8 @@ class UserController extends ApiController
                 }catch(JWTException $e){
                     $user->api_token = NULL;
                     $user->save();
-                    return $this->respondInternalError("Login Unsuccessful. An error occurred while performing an action!");
+                    return $this->_login($request['email'], $request['password']);
+                    // return $this->respondInternalError("Login Unsuccessful. An error occurred while performing an action!");
                 }
             }
             else{

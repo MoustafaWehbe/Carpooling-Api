@@ -15,6 +15,8 @@ use App\Vehicles;
 use App\Ride_offer;
 use App\Ride_request;
 use Httpful;
+use Illuminate\Support\Facades\Log;
+
 
 
 
@@ -48,6 +50,7 @@ class RidesController extends ApiController
         	return $this->respondWithError("you need to enter your vehicle's info before offering a ride");
         }
         if ($request['path']) {
+	        Log::info($request, array("VEHICLEINFO"));
         	if (!$request['id']) {
         		return $this->respondValidationError('ride id is missing');
         	}

@@ -39,6 +39,10 @@ class RidesController extends ApiController
             $user = JWTAuth::toUser($request['api_token']);
         }
         catch (JWTException $e){
+            if (!$request['api_token']){
+            	return $this->respondWithError("api_token missing");
+            }
+            Log::info($request['api_token'], array("SESSIONEXPIRED"));
             return $this->respondWithError("Session Expired");
         }
         $profile = User_profile::where('user_id', $user->id)->first();
@@ -50,7 +54,7 @@ class RidesController extends ApiController
         	return $this->respondWithError("you need to enter your vehicle's info before offering a ride");
         }
         if ($request['path']) {
-	        Log::info($request, array("VEHICLEINFO"));
+	        Log::info($request, array("RIDEOFFER-PATHINFO"));
         	if (!$request['id']) {
         		return $this->respondValidationError('ride id is missing');
         	}
@@ -92,6 +96,10 @@ class RidesController extends ApiController
             $user = JWTAuth::toUser($request['api_token']);
         }
         catch (JWTException $e){
+            if (!$request['api_token']){
+            	return $this->respondWithError("api_token missing");
+            }
+            Log::info($request['api_token'], array("SESSIONEXPIRED"));
             return $this->respondWithError("Session Expired");
         }
         $rules = array (
@@ -123,10 +131,14 @@ class RidesController extends ApiController
             $user = JWTAuth::toUser($request['api_token']);
         }
         catch (JWTException $e){
+            if (!$request['api_token']){
+            	return $this->respondWithError("api_token missing");
+            }
+            Log::info($request['api_token'], array("SESSIONEXPIRED"));
             return $this->respondWithError("Session Expired");
         }
 
-		$rides = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date')->where('is_accomplished',0)->get();
+		$rides = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date', 'path')->where('is_accomplished',0)->get();
 		return $this->respond([
             'status' => 'success',
             'status_code' => $this->getStatusCode(),
@@ -139,12 +151,16 @@ class RidesController extends ApiController
             $user = JWTAuth::toUser($request['api_token']);
         }
         catch (JWTException $e){
+            if (!$request['api_token']){
+            	return $this->respondWithError("api_token missing");
+            }
+            Log::info($request['api_token'], array("SESSIONEXPIRED"));
             return $this->respondWithError("Session Expired");
         }
 
-        $ride_offers_unac = Ride_offer::select('id', 'from', 'to', 'ride_date')->where('is_accomplished',0)->where('user_id', $user->id)->get();
+        $ride_offers_unac = Ride_offer::select('id', 'from', 'to', 'ride_date', 'path')->where('is_accomplished',0)->where('user_id', $user->id)->get();
         $ride_requests_unac = Ride_request::select('id', 'from', 'to', 'ride_date')->where('is_accomplished',0)->where('user_id', $user->id)->get();
-        $ride_offers_ac = Ride_offer::select('id', 'from', 'to', 'ride_date')->where('is_accomplished',1)->where('user_id', $user->id)->get();
+        $ride_offers_ac = Ride_offer::select('id', 'from', 'to', 'ride_date', 'path')->where('is_accomplished',1)->where('user_id', $user->id)->get();
         $ride_requests_ac = Ride_request::select('id', 'from', 'to', 'ride_date')->where('is_accomplished',1)->where('user_id', $user->id)->get();
         
         return $this->respond([

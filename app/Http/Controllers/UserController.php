@@ -219,6 +219,10 @@ class UserController extends ApiController
                 $user = JWTAuth::toUser($request['api_token']);
             }
             catch (JWTException $e){
+                if (!$request['api_token']){
+                    return $this->respondWithError("Api_token missing");
+                }
+                Log::info($request['api_token'], array("SESSIONEXPIRED"));
                 return $this->respondWithError("Session Expired");
             }
             $profile = User_profile::where('user_id', $user->id)->first();
@@ -260,6 +264,10 @@ class UserController extends ApiController
             $user = JWTAuth::toUser($request['api_token']);
         }
         catch (JWTException $e){
+            if (!$request['api_token']){
+                return $this->respondWithError("Api_token missing");
+            }
+            Log::info($request['api_token'], array("SESSIONEXPIRED"));
             return $this->respondWithError("Session Expired");
         }
         $profile = User_profile::where('user_id', $user->id)->first();

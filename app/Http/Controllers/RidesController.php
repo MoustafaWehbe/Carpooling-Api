@@ -139,6 +139,9 @@ class RidesController extends ApiController
         }
 
 		$rides = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date', 'path')->where('is_accomplished',0)->get();
+		foreach ($rides as &$ride) {
+			$ride['path'] = json_decode($ride['path'], true);
+		}
 		return $this->respond([
             'status' => 'success',
             'status_code' => $this->getStatusCode(),
@@ -162,7 +165,12 @@ class RidesController extends ApiController
         $ride_requests_unac = Ride_request::select('id', 'from', 'to', 'ride_date')->where('is_accomplished',0)->where('user_id', $user->id)->get();
         $ride_offers_ac = Ride_offer::select('id', 'from', 'to', 'ride_date', 'path')->where('is_accomplished',1)->where('user_id', $user->id)->get();
         $ride_requests_ac = Ride_request::select('id', 'from', 'to', 'ride_date')->where('is_accomplished',1)->where('user_id', $user->id)->get();
-        
+        foreach ($ride_offers_unac as &$ride) {
+			$ride['path'] = json_decode($ride['path'], true);
+		}
+		foreach ($ride_offers_ac as &$ride) {
+			$ride['path'] = json_decode($ride['path'], true);
+		}
         return $this->respond([
             'status' => 'success',
             'status_code' => $this->getStatusCode(),

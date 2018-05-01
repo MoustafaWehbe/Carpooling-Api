@@ -54,7 +54,7 @@ class RidesController extends ApiController
         	if (!$request['id']) {
         		return $this->respondValidationError('ride id is missing');
         	}
-        	Ride_offer::where('id', $request['id'])->update(['path' => json_encode($request['path']]));
+        	Ride_offer::where('id', $request['id'])->update(['path' => json_encode($request['path'])]);
 			return $this->respond([
                 'status' => 'success',
                 'status_code' => $this->getStatusCode(),

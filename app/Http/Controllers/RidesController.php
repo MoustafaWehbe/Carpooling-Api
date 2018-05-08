@@ -14,6 +14,7 @@ use App\User_profile;
 use App\Vehicles;
 use App\Ride_offer;
 use App\Ride_request;
+use App\Driver_track;
 use Httpful;
 use Illuminate\Support\Facades\Log;
 
@@ -124,7 +125,7 @@ class RidesController extends ApiController
         // return;
         $bestRide = $f && $t ? $this->getBestRideOffer($f, $t): [];
         if($bestRide != []){
-            $driver = User::select('first_name', 'last_name', 'phone')->where('id', $bestRide['user_id'])->first();
+            $driver = User::select('id', 'first_name', 'last_name', 'phone')->where('id', $bestRide['user_id'])->first();
             $profile = User_profile::select('image', 'gender')->where('user_id', $bestRide['user_id'])->first();
             $driver['image'] = $profile['image'];
             $driver['gender'] = $profile['gender'];
@@ -217,6 +218,45 @@ class RidesController extends ApiController
         //     ]
         // ]);
 	}
+
+    public function track(Request $request) {
+        try{
+            $user = JWTAuth::toUser($request['api_token']);
+        }
+        catch (JWTException $e){
+            if (!$request['api_token']){
+                return $this->respondWithError("api_token missing");
+            }
+            Log::info($request['api_token'], array("SESSIONEXPIRED"));
+            return $this->respondWithError("Session Expired");
+        }
+        if (isset($request['driver_id'])) {
+            $location = Driver_track::where('user_id', $request['driver_id'])->first();
+            return $this->respond([
+                'status' => 'success',
+                'status_code' => $this->getStatusCode(),
+                'long' => $location['long'],
+                'lat' => $location['lat']
+            ]);
+        }
+        else {
+            $rules = array (
+                'long' => 'required|numeric',
+                'lat' => 'required|numeric',
+            );
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator-> fails()){
+                return $this->respondValidationError('Fields Validation Failed.', $validator->errors());
+            }
+            $location = Driver_track::updateOrCreate(
+                ['user_id' => $user->id], [
+                    'long' => $request['long'],
+                    'lat' => $request['lat']
+                ]
+            );
+            return $this->respondOk();
+        }
+    }
 
     public function getBestRideOffer($f, $t){
 

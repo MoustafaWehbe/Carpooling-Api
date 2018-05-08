@@ -220,6 +220,7 @@ class UserController extends ApiController
             }
             catch (JWTException $e){
                 if (!$request['api_token']){
+                    Log::info($request, array("NOAPITOKEN"));
                     return $this->respondWithError("Api_token missing");
                 }
                 Log::info($request['api_token'], array("SESSIONEXPIRED"));

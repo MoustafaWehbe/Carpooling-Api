@@ -118,6 +118,29 @@ class RidesController extends ApiController
         	'to' => $request['to'],
         	'ride_date' => $request['ride_date'],
         ]);
+        $f = json_decode($request['f'], true);
+        $t = json_decode($request['t'], true);
+        // var_dump($f);
+        // return;
+        $bestRide = $f && $t ? $this->getBestRideOffer($f, $t): [];
+        if($bestRide != []){
+            $driver = User::select('first_name', 'last_name', 'phone')->where('id', $bestRide['user_id'])->first();
+            $profile = User_profile::select('image', 'gender')->where('user_id', $bestRide['user_id'])->first();
+            $driver['image'] = $profile['image'];
+            $driver['gender'] = $profile['gender'];
+            $vehicle = Vehicles::select('type', 'model')->where('user_id', $bestRide['user_id'])->first();
+            return $this->respond([
+                'status' => 'success',
+                'status_code' => $this->getStatusCode(),
+                'message' => "New ride request created",
+                'id' => $ride->id,
+                'best_ride' => [
+                    'ride' => $bestRide,
+                    'driver' => $driver,
+                    'vehicle' => $vehicle
+                ]
+            ]);
+        }
         return $this->respond([
             'status' => 'success',
             'status_code' => $this->getStatusCode(),
@@ -194,4 +217,31 @@ class RidesController extends ApiController
         //     ]
         // ]);
 	}
+
+    public function getBestRideOffer($f, $t){
+
+        $rides = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date', 'path')->where('is_accomplished',0)->get();
+        $bestRide = [];
+        foreach ($rides as $ride) {
+            if ($ride['path']) {
+                $ride['path'] = json_decode($ride['path'], true);
+                foreach ($ride['path'] as $path) {
+                   if(( -0.0015< ($path['latitude']-$f[0]) && ($path['latitude']-$f[0])< 0.0015 ) && (-0.0015<($f[1]-$path['longitude']) &&  ($f[1]-$path['longitude']) < 0.0015)){
+                      $bestRide['user_id'] = $ride['user_id'];
+                    } 
+                    else if(( -0.0015< ($path['latitude']-$t[0]) && ($path['latitude']-$t[0])< 0.0015 ) && (-0.0015<($t[1]-$path['longitude']) &&  ($t[1]-$path['longitude']) < 0.0015)){
+                      $bestRide['ride_id'] = $ride['id'];
+                    } 
+                }
+            }
+            if(isset($bestRide['user_id']) && isset($bestRide['ride_id'])){
+                $bestRide = $ride;
+                break;
+            }
+            else { 
+                $bestRide=[];
+            }
+        }
+        return $bestRide;
+    }
 }

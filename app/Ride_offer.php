@@ -9,6 +9,6 @@ class Ride_offer extends Model
 {
  	protected $table = "ride_offer";
  	protected $primaryKey = "id";
- 	protected $fillable = ['user_id', 'from', 'to', 'type', 'ride_date'];
+ 	protected $fillable = ['user_id', 'from', 'to', 'type', 'ride_date', 'is_accomplished', 'is_active', 'ride_requests'];
     
 }

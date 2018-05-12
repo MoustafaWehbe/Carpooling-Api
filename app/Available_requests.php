@@ -9,6 +9,6 @@ class Available_requests extends Model
 {
  	protected $table = "available_requests";
  	protected $primaryKey = "id";
- 	protected $fillable = ['request_id'];
+ 	protected $fillable = ['request_id', 'offer_id'];
     
 }

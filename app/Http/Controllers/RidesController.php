@@ -139,7 +139,7 @@ class RidesController extends ApiController
             'from' => $request['from'],
             'to' => $request['to'],
             'ride_date' => $request['ride_date'],
-            'longlat' => json_encode($longlat),
+            'longlat' => json_encode($longLat),
             'is_active' => 1
         ]);
         
@@ -355,13 +355,13 @@ class RidesController extends ApiController
 
     public function getBestRideOffers($id, $f, $t){
 
-        $rides = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date', 'path', 'ride_requests')->where('is_accomplished',0)->where('is_active', 1)->get();
+        $rides = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date', 'path', 'ride_requests')->where('is_accomplished',0)->where('is_active', 1)->whereNotNull('path')->get();
         Log::info($rides, array('RIDEOFFERSTOMATCH'));
         $bestRide = [];
         $offers = [];
         foreach ($rides as $ride) {
             $rideRequests = $ride['ride_requests'];
-            if ($ride['path'] || !$rideRequests || count(explode(',', $rideRequests)) < 3) {
+            if ($ride['path'] && (!$rideRequests || count(explode(',', $rideRequests)) < 3)) {
                 $ride['path'] = json_decode($ride['path'], true);
                 foreach ($ride['path'] as $path) {
                    if(( -0.0015< ($path['latitude']-$f[0]) && ($path['latitude']-$f[0])< 0.0015 ) && (-0.0015<($f[1]-$path['longitude']) &&  ($f[1]-$path['longitude']) < 0.0015)){

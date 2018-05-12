@@ -275,15 +275,15 @@ class RidesController extends ApiController
             return $this->respondWithError("Session Expired");
         }
 
-        $request = Ride_request::select('id', 'user_id', 'from', 'to', 'ride_date')
+        $rideRequest = Ride_request::select('id', 'user_id', 'from', 'to', 'ride_date')
                                 ->where([
                                 ["is_active", "=", 1],
                                 ["is_accomplished", "=", 0],
                                 ["user_id", "=", $user->id]
                             ])
                             ->first();
-        $availableOffers = Available_offers::where('request_id', $request['id'])->get();
-        $request['available_offers'] = [];
+        $availableOffers = Available_offers::where('request_id', $rideRequest['id'])->get();
+        $rideRequest['available_offers'] = [];
         foreach ($availableOffers as $offer) {
             $info = [];
             $info['ride'] = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date')
@@ -294,7 +294,7 @@ class RidesController extends ApiController
             $info['driver']['image'] = $profile['image'];
             $info['driver']['gender'] = $profile['gender'];
             $info['vehicle'] = Vehicles::select('type', 'model')->where('user_id', $info['ride']['user_id'])->first();
-            $request['available_offers'][] = $info;
+            $rideRequest['available_offers'][] = $info;
         }
         
 
@@ -311,7 +311,7 @@ class RidesController extends ApiController
         return $this->respond([
             'status' => 'success',
             'status_code' => $this->getStatusCode(),
-            'ride_request' => $request,
+            'ride_request' => $rideRequest,
             'ride_offer' => $offer
         ]);
 

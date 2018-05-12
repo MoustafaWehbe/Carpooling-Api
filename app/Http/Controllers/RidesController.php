@@ -124,8 +124,8 @@ class RidesController extends ApiController
             return $this->respondValidationError('Fields Validation Failed.', $validator->errors());
         }
 
-        $f = json_decode($request['f'], true);
-        $t = json_decode($request['t'], true);
+        $f = $request['f'];
+        $t = $request['t'];
         $longLat = ['from' => $f, 'to' => $t];
         Ride_request::where("user_id", $user->id)->update(["is_active" => 0]);
 

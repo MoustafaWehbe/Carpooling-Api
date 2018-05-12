@@ -282,7 +282,7 @@ class RidesController extends ApiController
                                 ["user_id", "=", $user->id]
                             ])
                             ->first();
-        $availableOffers = Available_offers::where('id', $request['id'])->get();
+        $availableOffers = Available_offers::where('request_id', $request['id'])->get();
         $request['available_offers'] = [];
         foreach ($availableOffers as $offer) {
             $info = [];
@@ -305,7 +305,7 @@ class RidesController extends ApiController
                             ])
                             ->first();
         
-        $count = Available_requests::where('id', $ride['id'])->count();
+        $count = Available_requests::where('offer_id', $ride['id'])->count();
         $offer['passengers_notified'] = $count;
         
         return $this->respond([
@@ -336,7 +336,7 @@ class RidesController extends ApiController
             return $this->respondValidationError("offer id is missing!");
         }
         Available_offers::where([
-                            ['id', '=', $request['request_id']],
+                            ['request_id', '=', $request['request_id']],
                             ['offer_id', '<>', $request['offer_id']]
                         ])
                         ->delete();
@@ -379,7 +379,7 @@ class RidesController extends ApiController
                 $bestRide = [];
                 $offers[] = $ride['id'];
                 Available_offers::create([
-                    'id' => $id,
+                    'request_id' => $id,
                     'offer_id' => $ride['id']
                 ]);
             }
@@ -417,11 +417,11 @@ class RidesController extends ApiController
                 $bestRequests[] = $ride['id'];
                 // Ride_request::where('id', $ride['id'])->update(['ride_offer', $id]);
                 Available_requests::create([
-                    'id' => $id,
+                    'offer_id' => $id,
                     'request_id' => $ride['id']
                 ]);
                 Available_offers::create([
-                    'id' => $ride['id'],
+                    'request_id' => $ride['id'],
                     'offer_id' => $id
                 ]);
                 $bestRide = [];

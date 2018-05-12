@@ -62,6 +62,7 @@ class RidesController extends ApiController
         	if (!$request['id']) {
         		return $this->respondValidationError('ride id is missing');
         	}
+            Ride_offer::where('id', $request['id'])->update(['path' => json_encode($request['path'])]);
             $bestRides = $this->getBestRideRequests($request['id'], $request['path']);
             
 			return $this->respond([
@@ -84,7 +85,9 @@ class RidesController extends ApiController
         if ($validator-> fails()){
             return $this->respondValidationError('Fields Validation Failed.', $validator->errors());
         }
-        Ride_offer::where("user_id", $user->id)->update(["is_active" => 0]);
+        Ride_offer::where("user_id", $user->id)
+                    ->where('is_active', 1)
+                    ->update(["is_active" => 0]);
 
 
         $ride = Ride_offer::create([
@@ -127,7 +130,9 @@ class RidesController extends ApiController
         $f = $request['f'];
         $t = $request['t'];
         $longLat = ['from' => $f, 'to' => $t];
-        Ride_request::where("user_id", $user->id)->update(["is_active" => 0]);
+        Ride_request::where("user_id", $user->id)
+                    ->where('is_active', 1)
+                    ->update(["is_active" => 0]);
 
         $ride = Ride_request::create([
             'user_id' => $user->id,
@@ -137,29 +142,9 @@ class RidesController extends ApiController
             'longlat' => json_encode($longlat),
             'is_active' => 1
         ]);
-        // var_dump($f);
-        // return;
+        
         $bestRide = $f && $t ? $this->getBestRideOffers($ride->id, $f, $t): [];
-        // if($bestRide != []){
-        //     $driver = User::select('id', 'first_name', 'last_name', 'phone')->where('id', $bestRide['user_id'])->first();
-        //     $profile = User_profile::select('image', 'gender')->where('user_id', $bestRide['user_id'])->first();
-        //     $driver['image'] = $profile['image'];
-        //     $driver['gender'] = $profile['gender'];
-        //     $vehicle = Vehicles::select('type', 'model')->where('user_id', $bestRide['user_id'])->first();
-        //     return $this->respond([
-        //         'status' => 'success',
-        //         'status_code' => $this->getStatusCode(),
-        //         'message' => "New ride request created",
-        //         'id' => $ride->id,
-        //         'best_ride' => [
-        //             'ride' => $bestRide,
-        //             'driver' => $driver,
-        //             'vehicle' => $vehicle
-        //         ]
-        //     ]);
-        //     $ride->ride_offer = $bestRide['id'];
-        //     $ride->save();
-        // }
+       
         return $this->respond([
             'status' => 'success',
             'status_code' => $this->getStatusCode(),
@@ -290,7 +275,8 @@ class RidesController extends ApiController
             return $this->respondWithError("Session Expired");
         }
 
-        $request = Ride_request::where([
+        $request = Ride_request::select('id', 'user_id', 'from', 'to', 'ride_date')
+                                ->where([
                                 ["is_active", "=", 1],
                                 ["is_accomplished", "=", 0],
                                 ["user_id", "=", $user->id]
@@ -331,9 +317,46 @@ class RidesController extends ApiController
 
     }
 
+    public function acceptRide(Request $request) {
+        try{
+            $user = JWTAuth::toUser($request['api_token']);
+        }
+        catch (JWTException $e){
+            if (!$request['api_token']){
+                Log::info($request, array("NOAPITOKEN"));
+                return $this->respondWithError("Api_token missing");
+            }
+            Log::info($request['api_token'], array("SESSIONEXPIRED"));
+            return $this->respondWithError("Session Expired");
+        }
+        if (!$request['request_id']) {
+            return $this->respondValidationError("request id is missing!");
+        }
+        if (!$request['offer_id']) {
+            return $this->respondValidationError("offer id is missing!");
+        }
+        Available_offers::where([
+                            ['id', '=', $request['request_id']],
+                            ['offer_id', '<>', $request['offer_id']]
+                        ])
+                        ->delete();
+        $offer = Ride_offer::select('is_active', 'ride_requests')
+                            ->where('id', $request['offer_id'])
+                            ->first();
+        $offer->ride_requests = $offer->ride_requests ? explode(',', $offer->ride_requests) : [];
+        $offer->ride_requests[] = $request['request_id'];
+        $offer->ride_requests = implode(',', $offer->ride_requests);
+        $offer->save();
+        Ride_request::where('id', $request['request_id'])
+                        ->update(['ride_offer' => $request['offer_id']]);
+        Available_requests::where('request_id', $request['request_id'])->delete();
+        return $this->respondOk();
+    }
+
     public function getBestRideOffers($id, $f, $t){
 
         $rides = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date', 'path', 'ride_requests')->where('is_accomplished',0)->where('is_active', 1)->get();
+        Log::info($rides, array('RIDEOFFERSTOMATCH'));
         $bestRide = [];
         $offers = [];
         foreach ($rides as $ride) {
@@ -373,6 +396,7 @@ class RidesController extends ApiController
     public function getBestRideRequests($id, $offerpath){
 
         $rides = Ride_request::select('id', 'user_id', 'from', 'to', 'ride_date', 'longlat')->where('is_accomplished',0)->where('is_active', 1)->where('ride_offer', null)->get();
+        Log::info($rides, array('RIDEREQUESTSTOMATCH'));
         $bestRide = [];
         $bestRequests = [];
         foreach ($rides as $ride) {

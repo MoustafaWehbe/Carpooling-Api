@@ -85,10 +85,15 @@ class RidesController extends ApiController
         if ($validator-> fails()){
             return $this->respondValidationError('Fields Validation Failed.', $validator->errors());
         }
-        Ride_offer::where("user_id", $user->id)
-                    ->where('is_active', 1)
-                    ->update(["is_active" => 0]);
-
+        $active = Ride_offer::where("user_id", $user->id)
+                            ->where('is_active', 1)
+                            ->get();
+        foreach ($active as $ride) {
+            Available_offers::where('offer_id', $ride['id'])->delete();
+            Available_requests::where('offer_id', $ride['id'])->delete();
+            $ride->is_active = 0;
+            $ride->save();
+        }
 
         $ride = Ride_offer::create([
         	'user_id' => $user->id,

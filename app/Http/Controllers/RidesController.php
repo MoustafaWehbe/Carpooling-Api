@@ -294,16 +294,18 @@ class RidesController extends ApiController
                                 ["user_id", "=", $user->id]
                             ])
                             ->first();
-        if ($rideRequest->ride_offer === null) {
-            $availableOffers = Available_offers::where('request_id', $rideRequest['id'])->get();
-            $rideRequest['available_offers'] = [];
-            foreach ($availableOffers as $offer) {
-                $info = $this->getRideInfo($offer['offer_id']);
-                $rideRequest['available_offers'] = array_merge($rideRequest['available_offers'], [$info]);
+        if ($rideRequest) {
+            if ($rideRequest->ride_offer === null) {
+                $availableOffers = Available_offers::where('request_id', $rideRequest['id'])->get();
+                $rideRequest['available_offers'] = [];
+                foreach ($availableOffers as $offer) {
+                    $info = $this->getRideInfo($offer['offer_id']);
+                    $rideRequest['available_offers'] = array_merge($rideRequest['available_offers'], [$info]);
+                }
             }
-        }
-        else{
-            $rideRequest['accepted_offer'] = $this->getRideInfo($rideRequest->ride_offer);
+            else{
+                $rideRequest['accepted_offer'] = $this->getRideInfo($rideRequest->ride_offer);
+            }
         }
         
 
@@ -314,14 +316,15 @@ class RidesController extends ApiController
                                 ["user_id", "=", $user->id]
                             ])
                             ->first();
-        
-        $count = Available_requests::where('offer_id', $offer['id'])->count();
-        $offer['passengers_notified'] = $count;
-        $offer->ride_requests = $offer->ride_requests ? explode(',', $offer->ride_requests) : [];
-        $offer['accepted_requests'] = [];
-        foreach ($offer->ride_requests as $request_id) {
-            $info = $this->getRideInfo($request_id, 1);
-            $offer['accepted_requests'] = array_merge($rideRequest['available_offers'], [$info]);
+        if ($offer) {
+            $count = Available_requests::where('offer_id', $offer['id'])->count();
+            $offer['passengers_notified'] = $count;
+            $offer->ride_requests = $offer->ride_requests ? explode(',', $offer->ride_requests) : [];
+            $offer['accepted_requests'] = [];
+            foreach ($offer->ride_requests as $request_id) {
+                $info = $this->getRideInfo($request_id, 1);
+                $offer['accepted_requests'] = array_merge($rideRequest['available_offers'], [$info]);
+            }
         }
         
         return $this->respond([

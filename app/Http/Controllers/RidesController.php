@@ -130,9 +130,15 @@ class RidesController extends ApiController
         $f = $request['f'];
         $t = $request['t'];
         $longLat = ['from' => $f, 'to' => $t];
-        Ride_request::where("user_id", $user->id)
-                    ->where('is_active', 1)
-                    ->update(["is_active" => 0]);
+        $active = Ride_request::where("user_id", $user->id)
+                            ->where('is_active', 1)
+                            ->get();
+        foreach ($active as $ride) {
+            Available_offers::where('request_id', $ride['id'])->delete();
+            Available_requests::where('request_id', $ride['id'])->delete();
+            $ride->is_active = 0;
+            $ride->save();
+        }
 
         $ride = Ride_request::create([
             'user_id' => $user->id,
@@ -294,18 +300,19 @@ class RidesController extends ApiController
             $info['driver']['image'] = $profile['image'];
             $info['driver']['gender'] = $profile['gender'];
             $info['vehicle'] = Vehicles::select('type', 'model')->where('user_id', $info['ride']['user_id'])->first();
-            $rideRequest['available_offers'][] = $info;
+            $rideRequest['available_offers'] = array_merge($rideRequest['available_offers'], [$info]);
         }
         
 
-        $offer = Ride_offer::where([
+        $offer = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date')
+                            ->where([
                                 ["is_active", "=", 1],
                                 ["is_accomplished", "=", 0],
                                 ["user_id", "=", $user->id]
                             ])
                             ->first();
         
-        $count = Available_requests::where('offer_id', $ride['id'])->count();
+        $count = Available_requests::where('offer_id', $offer['id'])->count();
         $offer['passengers_notified'] = $count;
         
         return $this->respond([

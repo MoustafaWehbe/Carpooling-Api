@@ -408,7 +408,7 @@ class RidesController extends ApiController
                 if ($key != -1) {
                     array_splice($request_ids, $key, 1);
                 }
-                $offer->ride_requests = implode(',', $request_ids);
+                $offer->ride_requests = $request_ids != [] ? implode(',', $request_ids) : null;
                 $offer->save();
                 $this->getBestRideRequests($offer->id, $offer->path);
             }
@@ -474,9 +474,10 @@ class RidesController extends ApiController
                 // Ride_offer::where('id', $ride['id'])->update(['ride_requests' => implode(',', $rideRequests)]);
                 $bestRide = [];
                 $offers[] = $ride['id'];
-                Available_offers::create([
+                Available_offers::updateOrCreate([
                     'request_id' => $id,
                     'offer_id' => $ride['id']
+                    ], [
                 ]);
             }
             else { 
@@ -514,13 +515,17 @@ class RidesController extends ApiController
             if(isset($bestRide['user_id']) && isset($bestRide['ride_id'])){
                 $bestRequests[] = $ride['id'];
                 // Ride_request::where('id', $ride['id'])->update(['ride_offer', $id]);
-                Available_requests::create([
+                Available_requests::updateOrCreate([
                     'offer_id' => $id,
                     'request_id' => $ride['id']
+                    ],
+                    [
                 ]);
-                Available_offers::create([
+                Available_offers::updateOrCreate([
                     'request_id' => $ride['id'],
                     'offer_id' => $id
+                    ],
+                    [
                 ]);
                 $bestRide = [];
             }

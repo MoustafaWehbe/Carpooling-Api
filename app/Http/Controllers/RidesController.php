@@ -62,7 +62,7 @@ class RidesController extends ApiController
         	if (!$request['id']) {
         		return $this->respondValidationError('ride id is missing');
         	}
-            if($request['path'] instanceof string) $request['path'] = json_decode($request['path'], true);
+            if(is_string($request['path'])) $request['path'] = json_decode($request['path'], true);
             Ride_offer::where('id', $request['id'])->update(['path' => json_encode($request['path'])]);
             $bestRides = $this->getBestRideRequests($request['id'], $request['path']);
             
@@ -287,30 +287,27 @@ class RidesController extends ApiController
             return $this->respondWithError("Session Expired");
         }
 
-        $rideRequest = Ride_request::select('id', 'user_id', 'from', 'to', 'ride_date')
+        $rideRequest = Ride_request::select('id', 'user_id', 'from', 'to', 'ride_date', 'ride_offer')
                                 ->where([
                                 ["is_active", "=", 1],
                                 ["is_accomplished", "=", 0],
                                 ["user_id", "=", $user->id]
                             ])
                             ->first();
-        $availableOffers = Available_offers::where('request_id', $rideRequest['id'])->get();
-        $rideRequest['available_offers'] = [];
-        foreach ($availableOffers as $offer) {
-            $info = [];
-            $info['ride'] = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date')
-                                        ->where('id', $offer['offer_id'])
-                                        ->first();
-            $info['driver'] = User::select('id', 'first_name', 'last_name', 'phone')->where('id', $info['ride']['user_id'])->first();
-            $profile = User_profile::select('image', 'gender')->where('user_id', $info['ride']['user_id'])->first();
-            $info['driver']['image'] = $profile['image'];
-            $info['driver']['gender'] = $profile['gender'];
-            $info['vehicle'] = Vehicles::select('type', 'model')->where('user_id', $info['ride']['user_id'])->first();
-            $rideRequest['available_offers'] = array_merge($rideRequest['available_offers'], [$info]);
+        if ($rideRequest->ride_offer === null) {
+            $availableOffers = Available_offers::where('request_id', $rideRequest['id'])->get();
+            $rideRequest['available_offers'] = [];
+            foreach ($availableOffers as $offer) {
+                $info = $this->getRideInfo($offer['offer_id']);
+                $rideRequest['available_offers'] = array_merge($rideRequest['available_offers'], [$info]);
+            }
+        }
+        else{
+            $rideRequest['accepted_offer'] = $this->getRideInfo($rideRequest->ride_offer);
         }
         
 
-        $offer = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date')
+        $offer = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date', 'ride_requests')
                             ->where([
                                 ["is_active", "=", 1],
                                 ["is_accomplished", "=", 0],
@@ -320,6 +317,12 @@ class RidesController extends ApiController
         
         $count = Available_requests::where('offer_id', $offer['id'])->count();
         $offer['passengers_notified'] = $count;
+        $offer->ride_requests = $offer->ride_requests ? explode(',', $offer->ride_requests) : [];
+        $offer['accepted_requests'] = [];
+        foreach ($offer->ride_requests as $request_id) {
+            $info = $this->getRideInfo($request_id, 1);
+            $offer['accepted_requests'] = array_merge($rideRequest['available_offers'], [$info]);
+        }
         
         return $this->respond([
             'status' => 'success',
@@ -447,5 +450,22 @@ class RidesController extends ApiController
         //     Ride_offer::where('id', $id)->update(['ride_requests' => implode(',', $bestRequests)]);
         // }
         return $bestRequests;
+    }
+
+    public function getRideInfo($id, $is_request = 0) {
+        $info = [];
+        $info['ride'] = $is_request == 0 
+                        ? Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date')
+                                    ->where('id', $id)
+                                    ->first()
+                        : Ride_request::select('id', 'user_id', 'from', 'to', 'ride_date')
+                                    ->where('id', $id)
+                                    ->first();
+        $info['driver'] = User::select('id', 'first_name', 'last_name', 'phone')->where('id', $info['ride']['user_id'])->first();
+        $profile = User_profile::select('image', 'gender')->where('user_id', $info['ride']['user_id'])->first();
+        $info['driver']['image'] = $profile['image'];
+        $info['driver']['gender'] = $profile['gender'];
+        $info['vehicle'] = Vehicles::select('type', 'model')->where('user_id', $info['ride']['user_id'])->first();
+        return $info;
     }
 }

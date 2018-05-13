@@ -18,6 +18,7 @@ Route::group(['middleware' => 'cors', 'prefix' => '/v1'], function () {
     Route::post('/logout/{api_token}', 'UserController@logout');
     Route::post('/verify/phone', 'UserController@verifyNumber');
     Route::post('/user/profile', 'UserController@getProfile');
+    Route::post('/profile/update', 'UserController@getProfile');
     Route::post('/vehicle/update', 'UserController@updateVehicle');
     Route::post('/rides/offer', 'RidesController@offerRide');
     Route::post('/rides/offer/all', 'RidesController@getAllRideOffers');

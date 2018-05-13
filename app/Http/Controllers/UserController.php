@@ -304,5 +304,56 @@ class UserController extends ApiController
                         'id' => $vehicle->id
                     ]);
     }
+
+    public function updateUserInfo(Request $request) {
+        try{
+            $user = JWTAuth::toUser($request['api_token']);
+        }
+        catch (JWTException $e){
+            if (!$request['api_token']){
+                Log::info($request, array("NOAPITOKEN"));
+                return $this->respondWithError("Api_token missing");
+            }
+            Log::info($request['api_token'], array("SESSIONEXPIRED"));
+            return $this->respondWithError("Session Expired");
+        }
+        $rules = array (
+            'first_name' => 'required|max:125',
+            'last_name' => 'required|max:125',
+            'phone' => 'required',
+            'gender' => 'required',
+        );
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator-> fails()){
+            return $this->respondValidationError('Fields Validation Failed.', $validator->errors());
+        }
+        $userUpdate = [
+            'first_name' => $request['first_name'],
+            'last_name' => $request['last_name'],
+            'phone' => $request['phone']
+        ];
+        $profileUpdate = [
+            'gender' => $request['gender']
+        ];
+        $vehicleUpdate = [];
+
+        if ($request['driving_license']) {
+            $profileUpdate['driving_license'] = $request['driving_license'];
+        }
+        if ($request['type']) {
+            $vehicleUpdate['type'] = $request['type'];
+        }
+        if ($request['model']) {
+            $vehicleUpdate['model'] = $request['model'];
+        }
+
+        User::where('id', $user->id)->update($userUpdate);
+        User_profile::where('user_id', $user->id)->update($profileUpdate);
+        if ($vehicleUpdate != []) 
+            Vehicles::where('user_id', $user->id)->update($vehicleUpdate);
+        
+        return $this->respondOk();
+
+    }
     
 }

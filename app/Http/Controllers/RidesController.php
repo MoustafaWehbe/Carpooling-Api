@@ -366,7 +366,7 @@ class RidesController extends ApiController
         Ride_request::where('id', $request['request_id'])
                         ->update(['ride_offer' => $request['offer_id']]);
         Available_requests::where('request_id', $request['request_id'])->delete();
-        return $this->respondOk();
+        return $this->getActiveRides($request);
     }
 
     public function getBestRideOffers($id, $f, $t){

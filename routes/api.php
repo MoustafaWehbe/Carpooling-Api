@@ -23,6 +23,7 @@ Route::group(['middleware' => 'cors', 'prefix' => '/v1'], function () {
     Route::post('/rides/offer/all', 'RidesController@getAllRideOffers');
     Route::post('/rides/request', 'RidesController@requestRide');
     Route::post('/rides/active', 'RidesController@getActiveRides');
+    Route::post('/rides/accept', 'RidesController@acceptRide');
     Route::post('/rides/me', 'RidesController@getMyRides');
     Route::post('/user/track', 'RidesController@track');
 });

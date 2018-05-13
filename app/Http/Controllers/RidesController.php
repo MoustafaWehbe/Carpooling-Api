@@ -362,9 +362,9 @@ class RidesController extends ApiController
         $offer = Ride_offer::select('is_active', 'ride_requests')
                             ->where('id', $request['offer_id'])
                             ->first();
-        $offer->ride_requests = $offer->ride_requests ? explode(',', $offer->ride_requests) : [];
-        $offer->ride_requests[] = $request['request_id'];
-        $offer->ride_requests = implode(',', $offer->ride_requests);
+        $request_ids = $offer->ride_requests ? explode(',', $offer->ride_requests) : [];
+        $request_ids[] = $request['request_id'];
+        $offer->ride_requests = implode(',', $request_ids);
         $offer->save();
         Ride_request::where('id', $request['request_id'])
                         ->update(['ride_offer' => $request['offer_id']]);

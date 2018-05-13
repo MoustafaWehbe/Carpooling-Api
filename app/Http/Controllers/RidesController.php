@@ -157,7 +157,7 @@ class RidesController extends ApiController
             'is_active' => 1
         ]);
         
-        $bestRide = $f && $t ? $this->getBestRideOffers($ride->id, $f, $t): [];
+        $bestRide = $f && $t ? $this->getBestRideOffers($ride->id, $longLat): [];
        
         return $this->respond([
             'status' => 'success',
@@ -392,6 +392,9 @@ class RidesController extends ApiController
             if ($ride->is_active != 1){
                 return $this->respondWithError("Ride is not active");
             }
+            if ($ride->user_id != $user->id) {
+                return $this->respondWithError("PERMISSION DENIED: User does not own this ride");
+            }
             $ride->is_active = -1;
             $ride->save();
             Available_offers::where('request_id', $ride['id'])->delete();
@@ -405,14 +408,17 @@ class RidesController extends ApiController
                 }
                 $offer->ride_requests = implode(',', $request_ids);
                 $offer->save();
+                $this->getBestRideRequests($offer->id, $offer->path);
             }
-            return $this->respondOk();
         }
 
         elseif ($request['offer_id']) {
             $ride = Ride_offer::where('id', $request['offer_id'])->first();
             if ($ride->is_active != 1){
                 return $this->respondWithError("Ride is not active");
+            }
+            if ($ride->user_id != $user->id) {
+                return $this->respondWithError("PERMISSION DENIED: User does not own this ride");
             }
             $ride->is_active = -1;
             $ride->save();
@@ -424,15 +430,25 @@ class RidesController extends ApiController
                     $req = Ride_request::where('id', $id)->first();
                     $req->ride_offer = null;
                     $req->save();
+                    $this->getBestRideOffers($req->id, $req->longlat);
                 }
             }
         }
         else {
             return $this->respondValidationError("Ride id is missing");
         }
+        return $this->getActiveRides($request);
     }
-    public function getBestRideOffers($id, $f, $t){
 
+
+
+    public function getBestRideOffers($id, $longlat){
+
+        if (is_string($longlat)) {
+            $longlat = json_decode($longlat, true);
+        }
+        $f = $longlat['from'];
+        $t = $longlat['to'];
         $rides = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date', 'path', 'ride_requests')->where('is_accomplished',0)->where('is_active', 1)->whereNotNull('path')->get();
         Log::info($rides, array('RIDEOFFERSTOMATCH'));
         $bestRide = [];
@@ -442,10 +458,10 @@ class RidesController extends ApiController
             if ($ride['path'] && (!$rideRequests || count(explode(',', $rideRequests)) < 3)) {
                 $ride['path'] = json_decode($ride['path'], true);
                 foreach ($ride['path'] as $path) {
-                   if(( -0.0015< ($path['latitude']-$f[0]) && ($path['latitude']-$f[0])< 0.0015 ) && (-0.0015<($f[1]-$path['longitude']) &&  ($f[1]-$path['longitude']) < 0.0015)){
+                   if(( -0.015< ($path['latitude']-$f[0]) && ($path['latitude']-$f[0])< 0.015 ) && (-0.015<($f[1]-$path['longitude']) &&  ($f[1]-$path['longitude']) < 0.015)){
                       $bestRide['user_id'] = $ride['user_id'];
                     } 
-                    else if(( -0.0015< ($path['latitude']-$t[0]) && ($path['latitude']-$t[0])< 0.0015 ) && (-0.0015<($t[1]-$path['longitude']) &&  ($t[1]-$path['longitude']) < 0.0015)){
+                    else if(( -0.015< ($path['latitude']-$t[0]) && ($path['latitude']-$t[0])< 0.015 ) && (-0.015<($t[1]-$path['longitude']) &&  ($t[1]-$path['longitude']) < 0.015)){
                       $bestRide['ride_id'] = $ride['id'];
                     } 
                 }
@@ -472,7 +488,9 @@ class RidesController extends ApiController
     }
 
     public function getBestRideRequests($id, $offerpath){
-
+        if (is_string($offerpath)) {
+            $offerpath = json_decode($offerpath, true);
+        }
         $rides = Ride_request::select('id', 'user_id', 'from', 'to', 'ride_date', 'longlat')->where('is_accomplished',0)->where('is_active', 1)->where('ride_offer', null)->get();
         Log::info($rides, array('RIDEREQUESTSTOMATCH'));
         $bestRide = [];
@@ -483,10 +501,10 @@ class RidesController extends ApiController
                 $f = $ride['longlat']['from'];
                 $t = $ride['longlat']['to'];
                 foreach ($offerpath as $path) {
-                   if(( -0.0015< ($path['latitude']-$f[0]) && ($path['latitude']-$f[0])< 0.0015 ) && (-0.0015<($f[1]-$path['longitude']) &&  ($f[1]-$path['longitude']) < 0.0015)){
+                   if(( -0.015< ($path['latitude']-$f[0]) && ($path['latitude']-$f[0])< 0.015 ) && (-0.015<($f[1]-$path['longitude']) &&  ($f[1]-$path['longitude']) < 0.015)){
                       $bestRide['user_id'] = $ride['user_id'];
                     } 
-                    else if(( -0.0015< ($path['latitude']-$t[0]) && ($path['latitude']-$t[0])< 0.0015 ) && (-0.0015<($t[1]-$path['longitude']) &&  ($t[1]-$path['longitude']) < 0.0015)){
+                    else if(( -0.015< ($path['latitude']-$t[0]) && ($path['latitude']-$t[0])< 0.015 ) && (-0.015<($t[1]-$path['longitude']) &&  ($t[1]-$path['longitude']) < 0.015)){
                       $bestRide['ride_id'] = $ride['id'];
                     } 
                 }

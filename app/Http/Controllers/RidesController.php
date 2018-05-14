@@ -94,6 +94,9 @@ class RidesController extends ApiController
         foreach ($active as $ride) {
             Available_offers::where('offer_id', $ride['id'])->delete();
             Available_requests::where('offer_id', $ride['id'])->delete();
+            Ride_requests::where('is_active', 1)
+                        ->where('ride_offer', $ride['id'])
+                        ->update(['ride_offer' => null]);
             $ride->is_active = 0;
             $ride->save();
         }
@@ -144,6 +147,11 @@ class RidesController extends ApiController
         foreach ($active as $ride) {
             Available_offers::where('request_id', $ride['id'])->delete();
             Available_requests::where('request_id', $ride['id'])->delete();
+            if($ride->ride_offer){
+                $offer = Ride_offer::where('id', $ride->ride_offer)->first();
+                $offer->ride_requests = $this->removeRequest($offer->ride_requests, $ride['id']);
+                $offer->save();
+            }
             $ride->is_active = 0;
             $ride->save();
         }
@@ -276,7 +284,7 @@ class RidesController extends ApiController
         }
     }
 
-    public function getActiveRides(Request $request) {
+    public function getActiveRides(Request $request, $message = null) {
         try{
             $user = JWTAuth::toUser($request['api_token']);
         }
@@ -301,7 +309,8 @@ class RidesController extends ApiController
                 $availableOffers = Available_offers::where('request_id', $rideRequest['id'])->get();
                 $rideRequest['available_offers'] = [];
                 foreach ($availableOffers as $offer) {
-                    $info = $this->getRideInfo($offer['offer_id']);
+                    $info = $this->getRideInfo($offer['offer_id'], 0, $request_id = $rideRequest['id']);
+                    if (!$info) continue;
                     $rideRequest['available_offers'] = array_merge($rideRequest['available_offers'], [$info]);
                 }
             }
@@ -333,7 +342,8 @@ class RidesController extends ApiController
             'status' => 'success',
             'status_code' => $this->getStatusCode(),
             'ride_request' => $rideRequest,
-            'ride_offer' => $offer
+            'ride_offer' => $offer,
+            'message' => $message
         ]);
 
     }
@@ -356,19 +366,23 @@ class RidesController extends ApiController
         if (!$request['offer_id']) {
             return $this->respondValidationError("offer id is missing!");
         }
-        Available_offers::where([
-                            ['request_id', '=', $request['request_id']],
-                            ['offer_id', '<>', $request['offer_id']]
-                        ])
-                        ->delete();
         $offer = Ride_offer::where('id', $request['offer_id'])
                             ->first();
+        if($offer->passengers >= 3){
+            return $this->getActiveRides($request, "this ride offer is no more available");
+        }
         $request_ids = $offer->ride_requests ? explode(',', $offer->ride_requests) : [];
         if (!in_array($request['reques_id'], $request_ids)) {
             $request_ids[] = $request['request_id'];
         }
         $offer->ride_requests = implode(',', $request_ids);
+        $offer->passengers++;
         $offer->save();
+        Available_offers::where([
+                            ['request_id', '=', $request['request_id']],
+                            ['offer_id', '<>', $request['offer_id']]
+                        ])
+                        ->delete();
         Ride_request::where('id', $request['request_id'])
                         ->update(['ride_offer' => $request['offer_id']]);
         Available_requests::where('request_id', $request['request_id'])->delete();
@@ -539,20 +553,39 @@ class RidesController extends ApiController
         return $bestRequests;
     }
 
-    public function getRideInfo($id, $is_request = 0) {
+    public function getRideInfo($id, $is_request = 0, $request_id = null) {
         $info = [];
-        $info['ride'] = $is_request == 0 
-                        ? Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date')
-                                    ->where('id', $id)
-                                    ->first()
-                        : Ride_request::select('id', 'user_id', 'from', 'to', 'ride_date')
+        if($is_request == 0) {
+            $info['ride'] = Ride_offer::select('id', 'user_id', 'from', 'to', 'ride_date', 'passengers')
                                     ->where('id', $id)
                                     ->first();
+            if ($info['ride']['passengers'] >= 3) {
+                Available_offers::where('request_id', $request_id)->where('offer_id', $id)->delete();
+                Available_requests::where('request_id', $request_id)->where('offer_id', $id)->delete();
+                return false;
+            }
+        }
+        else{
+            $info['ride'] = Ride_request::select('id', 'user_id', 'from', 'to', 'ride_date')
+                                    ->where('id', $id)
+                                    ->first();
+        }
+        
         $info['driver'] = User::select('id', 'first_name', 'last_name', 'phone')->where('id', $info['ride']['user_id'])->first();
         $profile = User_profile::select('image', 'gender')->where('user_id', $info['ride']['user_id'])->first();
         $info['driver']['image'] = $profile['image'];
         $info['driver']['gender'] = $profile['gender'];
         $info['vehicle'] = Vehicles::select('type', 'model')->where('user_id', $info['ride']['user_id'])->first();
         return $info;
+    }
+
+    public function removeRequest($requests, $value) {
+        $requests = $requests ? explode(',', $requests) : [];
+        $key = array_search($value, $requests);
+        if ($key != -1) {
+            array_splice($requests, $key, 1);
+        }
+        $requests = $requests != [] ? implode(',', $requests) : null;
+        return $requests;
     }
 }

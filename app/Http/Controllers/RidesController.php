@@ -150,6 +150,7 @@ class RidesController extends ApiController
             if($ride->ride_offer){
                 $offer = Ride_offer::where('id', $ride->ride_offer)->first();
                 $offer->ride_requests = $this->removeRequest($offer->ride_requests, $ride['id']);
+                $offer->passengers--;
                 $offer->save();
             }
             $ride->is_active = 0;
@@ -419,6 +420,7 @@ class RidesController extends ApiController
                 $offer = Ride_offer::where('id', $ride->ride_offer)->first();
                 
                 $offer->ride_requests = $this->removeRequest($offer->ride_requests, $request['request_id']);
+                $offer->passengers--;
                 $offer->save();
                 $this->getBestRideRequests($offer->id, $offer->path);
             }

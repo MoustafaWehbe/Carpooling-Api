@@ -200,6 +200,32 @@ class RidesController extends ApiController
         ]);
 	}				
 
+    public function getLeaderBoard(Request $request) {
+        try{
+            $user = JWTAuth::toUser($request['api_token']);
+        }
+        catch (JWTException $e){
+            if (!$request['api_token']){
+                Log::info($request, array("NOAPITOKEN"));
+                return $this->respondWithError("Api_token missing");
+            }
+            Log::info($request['api_token'], array("SESSIONEXPIRED"));
+            return $this->respondWithError("Session Expired");
+        }
+
+        $users = Users::join('user_profile', 'users.id', '=', 'user_profile.user_id')
+                        ->select('first_name', 'last_name', 'image', 'points')
+                        ->orderBy('points', 'desc')
+                        ->get();
+        return $this->respond([
+            'status' => 'success',
+            'status_code' => $this->getStatusCode(),
+            'users' => $users
+        ]);
+
+    }
+
+
 	public function getMyRides(Request $request) {
 		try{
             $user = JWTAuth::toUser($request['api_token']);

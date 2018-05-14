@@ -415,14 +415,10 @@ class RidesController extends ApiController
             $ride->save();
             Available_offers::where('request_id', $ride['id'])->delete();
             Available_requests::where('request_id', $ride['id'])->delete();
-            if ($ride->ride_offer) {
+            if ($ride && $ride->ride_offer) {
                 $offer = Ride_offer::where('id', $ride->ride_offer)->first();
-                $request_ids = $offer->ride_requests ? explode(',', $offer->ride_requests) : [];
-                $key = array_search($request['request_id'], $request_ids);
-                if ($key != -1) {
-                    array_splice($request_ids, $key, 1);
-                }
-                $offer->ride_requests = $request_ids != [] ? implode(',', $request_ids) : null;
+                
+                $offer->ride_requests = $this->removeRequest($offer->ride_requests, $request['request_id']);
                 $offer->save();
                 $this->getBestRideRequests($offer->id, $offer->path);
             }

@@ -1,0 +1,58 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<ion-header>
+
+  <ion-navbar color="primary">
+    <ion-title>Prizes</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+<ion-content >
+
+	<ion-segment  class="SwipedTabs-tabs"  >
+		<ion-segment-button *ngFor='let tab of tabs ; let i = index ' value="IngoreMe" (click)="selectTab(i)"
+		[ngClass]='{ "SwipedTabs-activeTab" : ( this.SwipedTabsSlider  && ( this.SwipedTabsSlider.getActiveIndex() === i || (  tabs.length -1 === i&& this.SwipedTabsSlider.isEnd()))) }' >
+			{{tab}}
+		</ion-segment-button>
+	</ion-segment>
+
+	<!-- here is our dynamic line  "indicator"-->
+	<div id='indicator' class="SwipedTabs-indicatorSegment" [ngStyle]="{'width.%': (100/this.tabs.length)}"></div>
+
+	<ion-slides #SwipedTabsSlider  (ionSlideDrag)="animateIndicator($event)"
+							(ionSlideWillChange)="updateIndicatorPosition()"
+							(ionSlideDidChange)="updateIndicatorPosition()"
+							(pan)="updateIndicatorPosition()"
+							[pager]="false"
+				>
+		<ion-slide id = "ride">	
+			<div class ="wholeInfo" [hidden] = "users.length==0">
+
+					<ion-grid  [hidden]="users.length==0">
+						<ion-row *ngFor = "let user of users">
+							<ion-col col-3>
+								<div id="profile">	
+									<img src="assets/imgs/defaultProfile.png">
+								</div>
+							</ion-col>
+							<ion-col col-9>
+								<div class = "info">
+									<h2>{{user.first_name}} {{user.last_name}}</h2><br>
+									{{user.points}} points
+								</div>
+							</ion-col>
+					</ion-row>
+				</ion-grid>			 
+			</div>
+
+		</ion-slide>
+		
+		<ion-slide>
+			<h1>No prizes</h1>
+		</ion-slide>
+	
+	</ion-slides>
+
+
+</ion-content>

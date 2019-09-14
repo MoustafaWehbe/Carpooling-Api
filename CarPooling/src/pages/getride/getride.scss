@@ -1,0 +1,15 @@
+page-getride {
+	#modalButtons{bottom: 0; position: absolute;}
+	#getForm{top: 10%!important; position: relative; width:200px;}	
+	h1{text-align: center;}
+	ion-navbar{color: white; padding-left: 20px!important;}
+	.pac-container {
+		z-index: 3000 !important;
+		}
+		.modal-open {
+			pointer-events: auto !important;
+		}
+
+		label{ margin: 20px; font-weight: bold}
+		input{margin: 20px; border:none;}
+}

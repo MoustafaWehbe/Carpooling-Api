@@ -1,0 +1,84 @@
+  <!--
+  Generated template for the ProfilePage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+	<ion-navbar color="primary">
+		<ion-grid>
+			<ion-row>
+				<ion-col col-6>
+					<ion-title id ="title">Profile</ion-title>
+				</ion-col>
+				<ion-col col-3  >
+					<ion-icon id = "create" name="create" (click) ="edit()"></ion-icon>
+				</ion-col>
+				<ion-col col-2  offset-1>
+					<button ion-button icon-only (click)="presentPopover($event)">
+  					<ion-icon name="more"></ion-icon>
+					</button>
+				</ion-col>
+			</ion-row>
+		</ion-grid>
+	</ion-navbar>
+</ion-header>
+
+
+
+<ion-content padding class = "content" >
+	
+
+	<ion-card>
+  		<ion-card-content>
+  			<!--just add imageViewer inside image to view it-->
+  			<div class = "container">
+				<img id="profileImage" class="circle-pic" src="{{imageURL}}" (click)="chooseImage()"/>
+				<div class="editImg">
+					<ion-icon class = "editIcon" name="create"></ion-icon>
+				</div>
+			</div>
+			<br />
+			<p id="user">{{LoadprofileProvider.first_name}} {{LoadprofileProvider.last_name}}</p>
+			<div class = "points"><span style="text-align: center; margin-left: 20px;">{{LoadprofileProvider.points}} pts!</span></div>
+			<input type="file" id="my_file" style="display: none;">
+		</ion-card-content>
+	</ion-card>
+	
+	<ion-card>
+		<ion-card-header class = "cardHeader">
+			Personal Details
+		</ion-card-header>
+		<hr> 		
+  		<ion-card-content class="centerElements">
+  			<ion-icon md="md-call" class="profileIcons"></ion-icon>
+  			{{LoadprofileProvider.phone}} <br />
+  			  <ion-icon ios="ios-people" md="md-people" class= "profileIcons"></ion-icon>
+  			  {{LoadprofileProvider.gender}}<br />
+
+		</ion-card-content>
+	</ion-card>
+
+	<ion-card>
+		<ion-card-header class = "cardHeader">
+			Vehicule Details
+		</ion-card-header>
+		<hr> 		
+		<div class = "centerElements">
+  			<ion-card-content>
+  				<div id="alignleft">
+  					<ion-icon name="car" class="profileIcons"></ion-icon>
+	  					{{LoadprofileProvider.type1}} <br />
+  				</div>
+		  			<ion-icon name="car" class="profileIcons"></ion-icon>
+		  				{{LoadprofileProvider.model}} <br />
+  					<ion-icon name="car" class="profileIcons"></ion-icon>
+  						{{LoadprofileProvider.drivingLicense}} <br />
+			</ion-card-content>
+		</div>
+	</ion-card>
+	
+	
+
+</ion-content>
+

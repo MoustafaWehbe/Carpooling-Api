@@ -1,0 +1,8 @@
+{
+  "name": "Carpooling",
+  "app_id": "5f39a354",
+  "type": "ionic-angular",
+  "integrations": {
+    "cordova": {}
+  }
+}

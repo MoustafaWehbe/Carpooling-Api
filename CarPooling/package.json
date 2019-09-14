@@ -1,0 +1,110 @@
+{
+  "name": "Carpooling2",
+  "version": "0.0.1",
+  "author": "Ionic Framework",
+  "homepage": "http://ionicframework.com/",
+  "private": true,
+  "scripts": {
+    "clean": "ionic-app-scripts clean",
+    "build": "ionic-app-scripts build",
+    "lint": "ionic-app-scripts lint",
+    "ionic:build": "ionic-app-scripts build",
+    "ionic:serve": "ionic-app-scripts serve"
+  },
+  "dependencies": {
+    "@angular/common": "5.0.3",
+    "@angular/compiler": "5.0.3",
+    "@angular/compiler-cli": "5.0.3",
+    "@angular/core": "5.0.3",
+    "@angular/forms": "5.0.3",
+    "@angular/http": "5.0.3",
+    "@angular/platform-browser": "5.0.3",
+    "@angular/platform-browser-dynamic": "5.0.3",
+    "@ionic-native/android-permissions": "^4.5.3",
+    "@ionic-native/background-geolocation": "^4.7.0",
+    "@ionic-native/camera": "^4.6.0",
+    "@ionic-native/core": "4.4.0",
+    "@ionic-native/geolocation": "^4.5.3",
+    "@ionic-native/google-maps": "^4.5.3",
+    "@ionic-native/push": "^4.5.3",
+    "@ionic-native/splash-screen": "4.4.0",
+    "@ionic-native/status-bar": "^4.5.3",
+    "@ionic/storage": "^2.1.3",
+    "cordova-android": "7.0.0",
+    "cordova-browser": "5.0.3",
+    "cordova-ios": "4.5.4",
+    "cordova-plugin-android-permissions": "^1.0.0",
+    "cordova-plugin-camera": "^4.0.2",
+    "cordova-plugin-device": "^2.0.1",
+    "cordova-plugin-geolocation": "^4.0.1",
+    "cordova-plugin-googlemaps": "^2.2.5",
+    "cordova-plugin-googlemaps-sdk": "git+https://github.com/mapsplugin/cordova-plugin-googlemaps-sdk.git#2.6.0",
+    "cordova-plugin-ionic-keyboard": "^2.0.5",
+    "cordova-plugin-ionic-webview": "^1.1.16",
+    "cordova-plugin-mauron85-background-geolocation": "^2.3.5",
+    "cordova-plugin-sms": "^1.0.5",
+    "cordova-plugin-splashscreen": "^5.0.2",
+    "cordova-plugin-statusbar": "^2.4.1",
+    "cordova-plugin-whitelist": "^1.3.3",
+    "cordova-sqlite-storage": "^2.3.0",
+    "daypilot-pro-angular": "https://npm.daypilot.org/daypilot-pro-angular/trial/8.3.2778.tar.gz",
+    "geojson.lib.routeboxer": "0.0.6",
+    "google-libphonenumber": "^3.0.12",
+    "ionic-angular": "3.9.2",
+    "ionic-cache": "^3.0.1",
+    "ionic-img-viewer": "^2.9.0",
+    "ionicons": "3.0.0",
+    "rxjs": "5.5.2",
+    "sw-toolbox": "3.6.0",
+    "zone.js": "0.8.18"
+  },
+  "devDependencies": {
+    "@ionic/app-scripts": "3.1.8",
+    "@types/googlemaps": "^3.30.7",
+    "@types/jquery": "^3.3.0",
+    "typedoc": "^0.11.1",
+    "typescript": "2.4.2"
+  },
+  "description": "An Ionic project",
+  "cordova": {
+    "plugins": {
+      "cordova-plugin-whitelist": {},
+      "cordova-plugin-device": {},
+      "cordova-plugin-splashscreen": {},
+      "cordova-plugin-ionic-webview": {},
+      "cordova-plugin-ionic-keyboard": {},
+      "cordova-plugin-android-permissions": {},
+      "cordova-plugin-sms": {},
+      "cordova-plugin-googlemaps": {
+        "API_KEY_FOR_ANDROID": "AIzaSyAnMUJfB8Cx95f43Ih9jNBYyNuDoTOQyJs",
+        "API_KEY_FOR_IOS": "AIzaSyAnMUJfB8Cx95f43Ih9jNBYyNuDoTOQyJs",
+        "PLAY_SERVICES_VERSION": "11.8.0",
+        "ANDROID_SUPPORT_V4_VERSION": "24.1.0",
+        "LOCATION_WHEN_IN_USE_DESCRIPTION": "This app wants to get your location while this app runs only.",
+        "LOCATION_ALWAYS_USAGE_DESCRIPTION": "This app wants to get your location always, even this app runs in background."
+      },
+      "cordova-plugin-statusbar": {},
+      "cordova-plugin-geolocation": {
+        "GEOLOCATION_USAGE_DESCRIPTION": "To locate you"
+      },
+      "cordova-plugin-camera": {},
+      "cordova-sqlite-storage": {},
+      "cordova-plugin-mauron85-background-geolocation": {
+        "GOOGLE_PLAY_SERVICES_VERSION": "11+",
+        "ANDROID_SUPPORT_LIBRARY_VERSION": "23+",
+        "ICON": "@mipmap/icon",
+        "SMALL_ICON": "@mipmap/icon",
+        "ACCOUNT_NAME": "@string/app_name",
+        "ACCOUNT_LABEL": "@string/app_name",
+        "ACCOUNT_TYPE": "$PACKAGE_NAME.account",
+        "CONTENT_AUTHORITY": "$PACKAGE_NAME",
+        "ALWAYS_USAGE_DESCRIPTION": "This app always requires location tracking"
+      }
+    },
+    "platforms": [
+      "android",
+      "browser",
+      "ios"
+    ]
+  }
+}

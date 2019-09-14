@@ -1,0 +1,37 @@
+
+<ion-header>
+
+  <ion-navbar color="primary">
+  	<ion-icon name="arrow-back" (click)="dismiss()"></ion-icon>
+  </ion-navbar>
+
+
+</ion-header>
+
+
+
+<ion-content padding>
+	<h1>Get Ride</h1>
+	<div id = "getForm">
+		<label>From:</label>
+		<input id = "from" type="text" [(ngModel)] ="From" placeholder="Enter your location"/>
+		<br />
+		<label>To:</label>
+		<input id = "to" type="text" [(ngModel)] ="To" placeholder="Enter your destination"/>
+		<br />
+		<label>Date:</label>
+		<input type="date" [(ngModel)]="Date"/>
+	</div>
+		<ion-grid id="modalButtons">
+			<ion-row>
+				<ion-col col-3 offset-6>
+					<button block clear ion-button class="button" (click) ="dismiss()">Cancel</button>
+				</ion-col>
+				<ion-col col-2  >
+					<button block clear ion-button class="button" (click) ="get()">Get</button>
+				</ion-col>
+			</ion-row>
+		</ion-grid>
+
+
+</ion-content>

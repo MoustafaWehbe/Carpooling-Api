@@ -1,0 +1,195 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<ion-header>
+	<ion-navbar color="primary">
+		<ion-title>Ride</ion-title>
+	</ion-navbar>
+</ion-header>
+
+<ion-content >
+
+	<ion-segment  class="SwipedTabs-tabs"  >
+		<ion-segment-button *ngFor='let tab of tabs ; let i = index ' value="IngoreMe" (click)="selectTab(i)"
+		[ngClass]='{ "SwipedTabs-activeTab" : ( this.SwipedTabsSlider  && ( this.SwipedTabsSlider.getActiveIndex() === i || (  tabs.length -1 === i&& this.SwipedTabsSlider.isEnd()))) }' >
+			{{tab}}
+		</ion-segment-button>
+	</ion-segment>
+
+	<!-- here is our dynamic line  "indicator"-->
+	<div id='indicator' class="SwipedTabs-indicatorSegment" [ngStyle]="{'width.%': (100/this.tabs.length)}"></div> 
+
+	<ion-slides #SwipedTabsSlider (ionSlideDrag)="animateIndicator($event)"
+							(ionSlideWillChange)="updateIndicatorPosition()"
+							(ionSlideDidChange)="updateIndicatorPosition()"
+							(pan)="updateIndicatorPosition()"
+							[pager]="false"
+						>
+		<ion-slide id = "ride">	
+			<div class="offerRide">	
+				<p>Share your car journeys and prevent traffic plroblems. You will also collect points and win good prizes</p>
+				<button color = "primary" round ion-button (click) = "offer()"> Give A ride </button>
+			</div>
+
+			<div class= "getRide">
+				<p>Find a comfortable ride and have fun meeting people and encountering less traffic problems.</p>
+				<button color="primary" round ion-button (click) ="get()"> Get A ride </button>
+			</div>
+		</ion-slide>
+		
+		<ion-slide>
+			<!-- <div class ="wholeInfo" [hidden]="this.SaveactiveProvider.driver_info.length==0">
+					<ion-grid>
+						<ion-row>
+							<ion-col col-3>
+								<div id="profile">	
+									<img src="assets/imgs/defaultProfile.png">
+								</div>
+							</ion-col>
+							<ion-col col-6>
+								<div class = "info">
+									{{this.SaveactiveProvider.driver_info[0]}} {{this.SaveactiveProvider.driver_info[1]}}
+									<br />
+									{{this.SaveactiveProvider.driver_info[3]}}
+									<br />
+									{{this.SaveactiveProvider.driver_info[2]}}
+									<br /> 		
+									<hr>
+									{{this.SaveactiveProvider.ride_info[0]}} -> {{this.SaveactiveProvider.ride_info[1]}}
+									<br />
+									{{this.SaveactiveProvider.ride_info[2]}}
+									<br />
+									<hr>
+									{{this.SaveactiveProvider.driver_vehicle[0]}}
+									<br />
+									{{this.SaveactiveProvider.driver_vehicle[1]}}			
+								</div>
+							</ion-col>
+							<ion-col col-2>
+								<div>
+										<ion-icon ios="ios-checkmark" md="md-checkmark" id="true"></ion-icon>
+										<br>
+									<ion-icon ios="ios-close" md="md-close" id="false"></ion-icon>
+									<br>
+								</div>
+							</ion-col>
+					</ion-row>
+				</ion-grid>			
+			</div> -->
+
+			<div class ="wholeInfo" [hidden] = "LoadactiveProvider.myRequest.length==0">
+				 <div>
+					<h6>Requested ride: from {{LoadactiveProvider.myRequest[1]}} to {{LoadactiveProvider.myRequest[2]}}</h6>
+				 	<button id = "Cancel" (click) = "cancel(LoadactiveProvider.myRequest[0], 'request')" >Cancel Ride</button>
+				 </div>
+				 <hr>
+					<ion-grid  [hidden]="LoadactiveProvider.accepted_offer.length==0">
+						<ion-row>
+							<ion-col col-3>
+								<div id="profile">	
+									<img src="assets/imgs/defaultProfile.png">
+								</div>
+							</ion-col>
+							<ion-col col-5>
+								<div class = "info">
+									<div>
+										{{LoadactiveProvider.accepted_offer[0]}}
+										{{LoadactiveProvider.accepted_offer[1]}}
+										<br />
+										{{LoadactiveProvider.accepted_offer[2]}}
+										<br />
+										{{LoadactiveProvider.accepted_offer[3]}}
+										<br />
+										<hr>
+										{{LoadactiveProvider.accepted_offer[4]}}->
+										{{LoadactiveProvider.accepted_offer[5]}}
+										<br/>
+										{{LoadactiveProvider.accepted_offer[6]}}
+										<br />
+										<hr>
+										{{LoadactiveProvider.accepted_offer[7]}}
+										<br />
+										{{LoadactiveProvider.accepted_offer[8]}}
+									</div>
+								</div>
+							</ion-col>
+							<ion-col col-4>
+								<div>
+									<img id = "stLoadactiveProvider.art" src="assets/imgs/track.png" width="30%" (click)="track(LoadactiveProvider.accepted_offer[4], LoadactiveProvider.accepted_offer[5], LoadactiveProvider.accepted_offer[9])"/>	
+								</div>
+							</ion-col>
+					</ion-row>
+				</ion-grid>			 
+			</div>
+
+			<div class ="wholeInfo" [hidden] = "LoadactiveProvider.available_offers.length==0" *ngFor = "let off of LoadactiveProvider.available_offers">
+				 <hr>
+					<ion-grid>
+						<ion-row>
+							<ion-col col-3>
+								<div id="profile">	
+									<img src="assets/imgs/defaultProfile.png">
+								</div>
+							</ion-col>
+							<ion-col col-6>
+								<div class = "info">
+									<div>
+										{{off.split("/")[0]}}
+										{{off.split("/")[1]}}
+										<br />
+										{{off.split("/")[2]}}
+										<br />
+										{{off.split("/")[3]}}
+										<br />
+										<hr>
+										{{off.split("/")[4]}}->
+										{{off.split("/")[5]}}
+										<br/>
+										{{off.split("/")[6]}}
+										<br />
+										<hr>
+										{{off.split("/")[7]}}
+										<br />
+										{{off.split("/")[8]}}
+									</div>
+								</div>
+							</ion-col>
+							<ion-col col-2>
+								<div>
+									<ion-icon ios="ios-checkmark" md="md-checkmark" id="true" (click)="checkRide(off.split('/')[9], off.split('/')[10])"></ion-icon>
+									<br>
+								</div>
+							</ion-col>
+					</ion-row>
+				</ion-grid>			 
+			</div>
+
+			<div class ="wholeInfo" [hidden] = "LoadactiveProvider.rideOffered.length==0">
+				<div>
+					<h6>Offered ride: from {{LoadactiveProvider.rideOffered[0]}} to {{LoadactiveProvider.rideOffered[1]}}</h6>
+				 	<button id = "Cancel" (click) = "cancel(LoadactiveProvider.rideOffered[4], 'offer')" >Cancel Ride</button>
+				 </div>
+				 <hr>
+				<ion-grid>
+					<ion-row>
+						<ion-col col-7>
+							<div class = "info">
+								Ride date: {{LoadactiveProvider.rideOffered[2]}}.
+								<br>
+								<hr>
+								{{LoadactiveProvider.rideOffered[3]}} people notified
+							</div>
+						</ion-col>
+						<ion-col col-5>
+							<div>
+								<img id = "start" src="assets/imgs/start.png" width="30%" (click)="start()" [hidden] = "started"/>
+								<img id = "start" src="assets/imgs/stop.png" width="30%" (click)="stop()" [hidden] ="!started" />	
+							<br>
+							</div>
+						</ion-col>
+					</ion-row>
+					<hr>
+				</ion-grid>
+			</div>
+		</ion-slide>
+	</ion-slides>
+</ion-content>
